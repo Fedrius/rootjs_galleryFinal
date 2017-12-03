@@ -1,5 +1,3 @@
-/* your javascript goes here */
-
 $(document).ready(initiateApp);
 
 var pictures = [
@@ -16,48 +14,88 @@ var pictures = [
 	'images/landscape-8.jpg',
 	'images/landscape-9.jpg',
 	'images/pexels-photo-132037.jpeg',
-	'images/pretty.jpg',
+	'images/pretty.jpg'
+];
+
+var pictureNames = [
+    'landscape-1',
+    'landscape-10',
+    'landscape-11',
+    'landscape-13',
+    'landscape-15',
+    'landscape-17',
+    'landscape-18',
+    'landscape-19',
+    'landscape-2',
+    'landscape-3',
+    'landscape-8',
+    'landscape-9',
+    'pexels-photo-132037',
+    'pretty'
 ];
 
 function initiateApp(){
-	/*advanced: add jquery sortable call here to make the gallery able to be sorted
-		//on change, rebuild the images array into the new order
-	*/
 	makeGallery(pictures);
 	addModalCloseHandler();
-}
-function makeGallery(imageArray){
-	//use loops and jquery dom creation to make the html structure inside the #gallery section
-
-	//create a loop to go through the pictures
-		//create the elements needed for each picture, store the elements in variable
-
-		//attach a click handler to the figure you create.  call the "displayImage" function.  
-
-		//append the element to the #gallery section
-
-}
-
-function addModalCloseHandler(){
-	//add a click handler to the img element in the image modal.  When the element is clicked, close the modal
-	//for more info, check here: https://www.w3schools.com/bootstrap/bootstrap_ref_js_modal.asp	
-}
-
-function displayImage(){
-	//find the url of the image by grabbing the background-image source, store it in a variable
-	//grab the direct url of the image by getting rid of the other pieces you don't need
-
-	//grab the name from the file url, ie the part without the path.  so "images/pexels-photo-132037.jpeg" would become
-		// pexels-photo-132037
-		//take a look at the lastIndexOf method
-
-	//change the modal-title text to the name you found above
-	//change the src of the image in the modal to the url of the image that was clicked on
-
-	//show the modal with JS.  Check for more info here: 
-	//https://www.w3schools.com/bootstrap/bootstrap_ref_js_modal.asp
+	// Allows sorting images and reorders array
+    $("#gallery").sortable({
+        stop: function sortEventHandler(event, ui){
+            var sortedArray = [];
+            var grabList = $(this).children();
+            for (var i = 0; i < grabList.length; i++){
+                var imageGrab = $(grabList[i]).attr('style');
+                var sliceOne = imageGrab.lastIndexOf('images');
+                var sliceTwo = imageGrab.lastIndexOf('"');
+                var slicedImage = imageGrab.slice(sliceOne,sliceTwo);
+                sortedArray.push(slicedImage);
+            }
+            pictures = sortedArray;
+            localStorage.clear(); //clears storage
+            populateStorage(); //then makes a new one for the new sort
+        },
+    }).disableSelection();
 }
 
+function makeGallery(imageArray) {
+    for (var galleryIndex = 0; galleryIndex < imageArray.length; galleryIndex++) {
+        var createdPicture = $('<figure>').addClass('imageGallery col-xs-12 col-sm-6 col-md-4').css('background-image', 'url(' + imageArray[galleryIndex] + ')');
+        createdPicture.click(displayImage);
+        var figCaption = $('<figcaption>').text(pictureNames[galleryIndex]);
+        createdPicture.append(figCaption);
+        $('#gallery').append(createdPicture);
+    }
+    populateStorage();
+}
+
+function addModalCloseHandler() {
+        $('img').click(function(){
+        $('#galleryModal').modal('hide');
+    });
+}
+
+function displayImage() {
+    var clickedImage = $(this).css('background-image');
+    var firstSlice = clickedImage.lastIndexOf('images');
+    var secondSlice = clickedImage.lastIndexOf('"');
+    var thirdSlice = clickedImage.lastIndexOf('.');
+    var fourthSlice = clickedImage.lastIndexOf('/');
+    fourthSlice++;
+    var modalImg = clickedImage.slice(firstSlice, secondSlice);
+    var modalTitle = clickedImage.slice(fourthSlice, thirdSlice);
+    $('.modal-title').text(modalTitle);
+    $('img').attr('src', modalImg);
+    $("#galleryModal").modal('show');
+}
+
+//function for storing the array in local storage
+function populateStorage() {
+    for(var i = 0; i < pictures.length; i++){
+        var slice1 = pictures[i].lastIndexOf('/');
+        slice1++;
+        var slice2 = pictures[i].lastIndexOf('.');
+        localStorage.setItem(pictures[i].slice(slice1, slice2), pictures[i]); //setItem(name, value)
+    }
+}
 
 
 
